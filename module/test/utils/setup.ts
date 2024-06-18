@@ -1,8 +1,9 @@
 import { deployments, ethers } from 'hardhat'
-import { Contract, Signer } from 'ethers'
+import { Contract, Signer, ContractFactory } from 'ethers'
 import solc from 'solc'
 import { logGas } from '../../src/utils/execution'
-import { ISafe, Safe4337Mock, SafeMock } from '../../typechain-types'
+import { ISafe, Safe4337Mock, SafeMock, CoinbaseSmartWalletFactory } from '../../typechain-types'
+import { utils } from 'ethersv5'
 
 const getRandomInt = (min = 0, max: number = Number.MAX_SAFE_INTEGER): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -43,9 +44,11 @@ export const getMockTarget = async () => {
   return await ethers.getContractAt('MockTarget', ModuleDeployment.address)
 }
 
-export const getOwnableValidator = async () => {
-  const validator = await deployments.get('OwnableValidator')
-  return await ethers.getContractAt('OwnableValidator', validator.address)
+
+
+export const getSafeFaucetModule = async () => {
+  const validator = await deployments.get('SafeFaucetModule')
+  return await ethers.getContractAt('SafeFaucetModule', validator.address)
 }
 
 export const getSafe7579 = async () => {
@@ -72,6 +75,33 @@ export const getTestSafe = async (deployer: Signer, fallbackHandler: string, mod
   console.log('Template', await template.getAddress())
   await logGas(`Setup Safe for ${await deployer.getAddress()}`, template.setup(fallbackHandler, moduleAddr))
   return template
+}
+
+
+export const getMockSWSingleton = async () => {
+  const SWDeployment = await deployments.get('CoinbaseSmartWallet')
+  return await ethers.getContractAt('CoinbaseSmartWallet', SWDeployment.address)
+}
+
+export const getSWFactory = async () => {
+  const FactoryDeployment = await deployments.get('CoinbaseSmartWalletFactory')
+  return await ethers.getContractAt('CoinbaseSmartWalletFactory', FactoryDeployment.address)
+}
+
+export const getTestSW = async (deployer: Signer) => {
+  const template = (await getSWTemplate([utils.defaultAbiCoder.encode(['address'], [await deployer.getAddress()])]))
+  console.log('Template', await template.getAddress())
+  return template
+}
+
+
+export const getSWTemplate = async (owners: string[]) => {
+  const singleton = await getMockSWSingleton()
+  console.log('singleton', await singleton.getAddress())
+  const factory = await getSWFactory() as CoinbaseSmartWalletFactory
+  const template = await factory.getAccountAddress(owners, 0)
+  await factory.createAccount(owners, 0).then((tx) => tx.wait())
+  return await ethers.getContractAt('CoinbaseSmartWallet', template)
 }
 
 export const get4337TestSafe = async (deployer: Signer, fallbackHandler: string, moduleAddr: string) => {
