@@ -17,6 +17,8 @@ contract SafeMock {
 
     uint256 public nonce;
 
+    string public constant VERSION = "1.3.0";
+
     constructor() {
         owner = msg.sender;
     }

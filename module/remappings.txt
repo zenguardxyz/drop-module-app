@@ -1,7 +1,7 @@
 
 @ERC4337/=node_modules/@ERC4337/
 account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/
-account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/
+account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/
 @openzeppelin/=node_modules/@openzeppelin/
 @safe-global/=node_modules/@safe-global/
 ds-test/=node_modules/ds-test/src/
