@@ -1,12 +1,13 @@
-import { Contract, ZeroAddress, parseEther, parseUnits, getBytes, JsonRpcProvider, toBeHex } from "ethers";
+import { Contract, ZeroAddress, parseEther, parseUnits, getBytes, JsonRpcProvider, toBeHex, Interface } from "ethers";
 import { ethers, utils } from 'ethersv5';
 import { BaseTransaction } from '@safe-global/safe-apps-sdk';
 import { getSafeInfo, isConnectedToSafe, submitTxs } from "./safeapp";
-import { isModuleEnabled, buildEnableModule, buildUpdateFallbackHandler } from "./safe";
+import { isModuleEnabled, buildEnableModule, buildUpdateFallbackHandler, isModuleInstalled } from "./safe";
 import { getJsonRpcProvider, getProvider } from "./web3";
 import Safe7579 from "./Safe7579.json"
 import EntryPoint from "./EntryPoint.json"
-import {  publicClient } from "./utils";
+import SafeFaucetModule from "./SafeFaucetModule.json"
+import {  getTokenDecimals, publicClient } from "./utils";
 import {  buildUnsignedUserOpTransaction } from "@/utils/userOp";
 import {  Hex, pad } from "viem";
 import { sepolia } from 'viem/chains'
@@ -14,7 +15,8 @@ import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation, getAccou
 import { sendUserOperation } from "./permissionless";
 
 const safe7579Module = "0x94952C0Ea317E9b8Bca613490AF25f6185623284"
-const ownableModule = "0xe90044FE8855B307Fe8F9848fd9558D5D3479191"
+const safeFaucetModule = "0xcf2e2945838dC48Dafe3d4973A88bd5C979702B1"
+const smartWalletImp = "0x000100abaad02f1cfC8Bbe32bD5a564817339E72"
 
 
 
@@ -60,11 +62,35 @@ export async function signAddress(string: string, privateKey: string) {
 
 
 
-export const sendTransaction = async (chainId: string, recipient: string, amount: bigint, walletProvider: any, safeAccount: string): Promise<any> => {
+const fetchFaucets = async (chainId: string ): Promise<any> => {
 
-    const call = { target: recipient as Hex, value: amount, callData: '0x' as Hex }
 
-    const key = BigInt(pad(ownableModule as Hex, {
+    const provider = await getJsonRpcProvider(chainId)
+    
+    const safeValidator = new Contract(
+        safeFaucetModule,
+        SafeFaucetModule.abi,
+        provider
+    )
+
+    return await safeValidator.listFaucets()
+}
+
+
+
+
+export const sendTransaction = async (chainId: string, recipient: string, amount: bigint, data: any, walletProvider: any, safeAccount: string): Promise<any> => {
+
+   
+    const abi = [
+        'function execute(uint256 faucetId, address to, uint256 value, bytes calldata data) external',
+      ]
+
+    const execCallData = new Interface(abi).encodeFunctionData('execute', [2, recipient, amount, data])
+
+    const call = { target: safeFaucetModule as Hex, value: 0, callData: execCallData as Hex }
+
+    const key = BigInt(pad(safeFaucetModule as Hex, {
         dir: "right",
         size: 24,
       }) || 0
@@ -76,6 +102,7 @@ export const sendTransaction = async (chainId: string, recipient: string, amount
         key: key
     })
 
+
     let unsignedUserOp = buildUnsignedUserOpTransaction(
         safeAccount as Hex,
         call,
@@ -83,22 +110,14 @@ export const sendTransaction = async (chainId: string, recipient: string, amount
       )
 
       const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.7">) {
-
-        const provider = await getJsonRpcProvider(chainId)
-    
-        const entryPoint = new Contract(
-            ENTRYPOINT_ADDRESS_V07,
-            EntryPoint.abi,
-            provider
-        )
-        let typedDataHash = getBytes(await entryPoint.getUserOpHash(getPackedUserOperation(userOperation)))
-        return await walletProvider.signMessage(typedDataHash) as `0x${string}`
+        return "0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     
     }
 
     const userOperationHash = await sendUserOperation(chainId, unsignedUserOp, signUserOperation )
 
     return userOperationHash;
+
 }
 
 
@@ -126,7 +145,7 @@ const buildInitSafe7579 = async ( ): Promise<BaseTransaction> => {
 }
 
 
-const buildInstallOwnable = async ( address: string ): Promise<BaseTransaction> => {
+const buildInstallValidator = async (): Promise<BaseTransaction> => {
 
     
     const info = await getSafeInfo()
@@ -145,14 +164,67 @@ const buildInstallOwnable = async ( address: string ): Promise<BaseTransaction> 
     return {
         to: info.safeAddress,
         value: "0",
-        data: (await safeValidator.installModule.populateTransaction(1, await ownableModule, utils.defaultAbiCoder.encode(['address'], [address]))).data
+        data: (await safeValidator.installModule.populateTransaction(1, safeFaucetModule, '0x')).data
+    }
+}
+
+const buildInstallExecutor = async ( ): Promise<BaseTransaction> => {
+
+    
+    const info = await getSafeInfo()
+
+    const provider = await getProvider()
+    // Updating the provider RPC if it's from the Safe App.
+    const chainId = (await provider.getNetwork()).chainId.toString()
+    const bProvider = await getJsonRpcProvider(chainId)
+
+    const safeValidator = new Contract(
+        safe7579Module,
+        Safe7579.abi,
+        bProvider
+    )
+
+    return {
+        to: info.safeAddress,
+        value: "0",
+        data: (await safeValidator.installModule.populateTransaction(2, safeFaucetModule, '0x')).data
+    }
+}
+
+
+const buildAddFaucet = async (token: string, amount: string, refreshInterval: number, validUntil: number ): Promise<BaseTransaction> => {
+
+    
+    const info = await getSafeInfo()
+    const provider = await getProvider()
+
+    // const sessionData = {account: info.safeAddress, token: token, validAfter: validAfter, validUntil: validUntil, limitAmount: parseUnits(amount, token!= ZeroAddress ? await getTokenDecimals(token, provider) : 'ether'), limitUsed: 0, lastUsed: 0, refreshInterval: refreshInterval }
+    const faucetData = {account: info.safeAddress, token: token, validAfter: 0, validUntil: validUntil, limitAmount: parseUnits(amount, token!= ZeroAddress ? await getTokenDecimals(token, provider) : 'ether'), refreshInterval: refreshInterval, eoa: {singletons: [], versions: [], supported: true}, safe: {singletons: [], versions: ["1.3.1", "1.4.1"], supported: true}, cbSW: {singletons: [smartWalletImp], versions: [], supported: false} }
+
+
+    // Updating the provider RPC if it's from the Safe App.
+    const chainId = (await provider.getNetwork()).chainId.toString()
+    const bProvider = await getJsonRpcProvider(chainId)
+
+    const safeFaucet = new Contract(
+        safeFaucetModule,
+        SafeFaucetModule.abi,
+        bProvider
+    )
+
+    return {
+        to: safeFaucetModule,
+        value: "0",
+        data: (await safeFaucet.addFaucet.populateTransaction(faucetData)).data
     }
 }
 
 
 
 
-export const addValidatorModule = async (ownerAddress: string ) => {
+
+
+export const addFaucetModule = async (token: string, amount: string, refreshInterval: number, validUntil: number) => {
 
     
     if (!await isConnectedToSafe()) throw Error("Not connected to a Safe")
@@ -165,11 +237,16 @@ export const addValidatorModule = async (ownerAddress: string ) => {
     if (!await isModuleEnabled(info.safeAddress, safe7579Module)) {
         txs.push(await buildEnableModule(info.safeAddress, safe7579Module))
         txs.push(await buildUpdateFallbackHandler(info.safeAddress, safe7579Module))
+        txs.push(await buildInitSafe7579())
     }
+    else if (!await isModuleInstalled(info.safeAddress, safeFaucetModule, 1)) {
+        txs.push(await buildInstallValidator())
+        txs.push(await buildInstallExecutor())
+        }
+        
+        txs.push(await buildAddFaucet(token, amount, refreshInterval, validUntil))
 
-    txs.push(await buildInitSafe7579())
 
-    txs.push(await buildInstallOwnable(ownerAddress))
 
     const provider = await getProvider()
     // Updating the provider RPC if it's from the Safe App.

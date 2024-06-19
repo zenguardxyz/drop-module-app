@@ -155,7 +155,7 @@ export const AccountPage = () => {
             parseAmount = 0n;
             toAddress = value;
         }
-    const result = await sendTransaction(chainId.toString(), toAddress, parseAmount, walletProvider, safeAccount)
+    const result = await sendTransaction(chainId.toString(), toAddress, parseAmount, '0x', walletProvider, safeAccount)
     if (!result)
     setSendSuccess(false);
     else {
@@ -169,7 +169,7 @@ export const AccountPage = () => {
     
     
   } catch(e) {
-    console.log('error')
+    console.log('error', e)
     setSendLoader(false);  
   }  
   setSendLoader(false);
