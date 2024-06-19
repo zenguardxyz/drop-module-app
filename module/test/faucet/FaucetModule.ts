@@ -158,8 +158,7 @@ describe('Spendlimit session key - Basic tests', () => {
 
       await execSafeTransaction(safe, {to: await safe.getAddress(), data:  ((await safe7579.installModule.populateTransaction(1, await faucetModule.getAddress(), '0x')).data as string), value: 0})
       await execSafeTransaction(safe, {to: await safe.getAddress(), data:  ((await safe7579.installModule.populateTransaction(2, await faucetModule.getAddress(), '0x')).data as string), value: 0})
-      await execSafeTransaction(safe, await faucetModule.addFaucet.populateTransaction(faucetData))
-      
+      await execSafeTransaction(safe, await faucetModule.addFaucet.populateTransaction(faucetData))      
       
       const key = BigInt(pad(await faucetModule.getAddress() as Hex, {
           dir: "right",

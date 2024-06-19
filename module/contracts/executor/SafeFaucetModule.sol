@@ -278,6 +278,9 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
         return true;
     }
 
+    function listFaucets() external view returns (FaucetData[] memory) {
+        return faucets;
+    }
 
     function name() external pure returns (string memory) {
         return "SpendLimitSession";
