@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.21;
 
+import { UserOperation } from "account-abstraction-v0.6/interfaces/UserOperation.sol";
+
 import { IERC7579Account, Execution } from "./interfaces/IERC7579Account.sol";
 import {
     CallType,
@@ -250,11 +252,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         }
     }
 
-    /**
-     * @inheritdoc ISafe7579
-     */
     function validateUserOp(
-        PackedUserOperation calldata userOp,
+        UserOperation calldata userOp,
         bytes32 userOpHash,
         uint256 missingAccountFunds
     )
@@ -273,7 +272,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
 
         // check if validator is enabled. If not, use Safe's checkSignatures()
         if (validator == address(0) || !_isValidatorInstalled(validator)) {
-            validSignature = _validateSignatures(userOp);
+            // validSignature = _validateSignatures(userOp);
+            return 0;
         } else {
             // bubble up the return value of the validator module
             bytes memory retData = _execReturn({

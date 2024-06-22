@@ -1,6 +1,6 @@
 import { base, celo, gnosis, sepolia, baseGoerli, goerli, polygon, baseSepolia } from 'viem/chains';
-import { http,  Chain, Hex } from "viem"
-import {  ENTRYPOINT_ADDRESS_V07, UserOperation} from 'permissionless';
+import { http,  Chain, Hex, createClient } from "viem"
+import {  ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07, UserOperation, bundlerActions, createBundlerClient} from 'permissionless';
 import { createPimlicoPaymasterClient, createPimlicoBundlerClient  } from "permissionless/clients/pimlico";
 
 /**
@@ -17,26 +17,38 @@ export const getChain = (chainId: string) : Chain => {
  * @param unsignedUserOp - The unsigned user operation.
  * @returns The sponsored user operation.
  */
-export const sendUserOperation = async (chainId: string, unsignedUserOp: UserOperation<"v0.7">, userOpSigner: any ) => {
+export const sendUserOperation = async (chainId: string, unsignedUserOp: UserOperation<"v0.6">, userOpSigner: any ) => {
 
   const chain = getChain(chainId);
-    console.log('insider', chainId, chain )
 
   const pimlicoEndpoint = `https://api.pimlico.io/v2/${chain.name.toLowerCase().replace(/\s+/g, '-')}/rpc?apikey=${import.meta.env.VITE_PIMLICO_API_KEY}`;
 
+  // const pimlicoEndpoint = `https://api.developer.coinbase.com/rpc/v1/base-sepolia/RyVs19m25aXB97Noe8gU2FftEiRmQnID`;
 
+  const rpcUrl = "https://api.developer.coinbase.com/rpc/v1/base-sepolia/RyVs19m25aXB97Noe8gU2FftEiRmQnID"
+
+  
   const pimlicoBundlerClient = createPimlicoBundlerClient({ 
       transport: http(pimlicoEndpoint),
-      entryPoint: ENTRYPOINT_ADDRESS_V07
+      entryPoint: ENTRYPOINT_ADDRESS_V06
     });
 
+    
+
+    const bundlerClient = createBundlerClient({
+      chain: baseSepolia
+      , transport: http(rpcUrl),
+      entryPoint: ENTRYPOINT_ADDRESS_V06,
+    })
+
   const paymasterClient = createPimlicoPaymasterClient({
-    transport: http(pimlicoEndpoint),
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
+    transport: http(rpcUrl),
+    entryPoint: ENTRYPOINT_ADDRESS_V06,
   });
 
 
   const gasPrice = await pimlicoBundlerClient.getUserOperationGasPrice();
+
 
   unsignedUserOp.maxFeePerGas = gasPrice.fast.maxFeePerGas;
   unsignedUserOp.maxPriorityFeePerGas = gasPrice.fast.maxPriorityFeePerGas;
@@ -45,10 +57,11 @@ export const sendUserOperation = async (chainId: string, unsignedUserOp: UserOpe
 
 
   const sponsorUserOperationResult = await paymasterClient.sponsorUserOperation({
-    userOperation: unsignedUserOp
+    userOperation: unsignedUserOp, 
+  
   });
 
-  const sponsoredUserOperation: UserOperation<"v0.7"> = {
+  const sponsoredUserOperation: UserOperation<"v0.6"> = {
     ...unsignedUserOp,
     ...sponsorUserOperationResult,
   };
@@ -56,13 +69,14 @@ export const sendUserOperation = async (chainId: string, unsignedUserOp: UserOpe
 
   console.log(sponsoredUserOperation)
 
-  console.log(await userOpSigner(sponsoredUserOperation))
   sponsoredUserOperation.signature  = await userOpSigner(sponsoredUserOperation)
 
   const userOperationHash = await pimlicoBundlerClient.sendUserOperation({
       userOperation: sponsoredUserOperation,
 
   })
+
+  console.log(userOperationHash)
 
   return userOperationHash;
 }

@@ -2,8 +2,10 @@
 pragma solidity ^0.8.23;
 
 import { ERC7579ValidatorBase } from "../module-bases/ERC7579ValidatorBase.sol";
-import { PackedUserOperation } from
+import { PackedUserOperation} from
     "@account-abstraction/contracts/core/UserOperationLib.sol";
+import { UserOperation } from "account-abstraction-v0.6/interfaces/UserOperation.sol";
+
 
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
@@ -67,6 +69,7 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
 
         // delete the Safe account sessions
     }
+    
 
     function validateUserOp(
         PackedUserOperation calldata userOp,
@@ -76,6 +79,15 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
         view
         override
         returns (ValidationData)
+    {
+
+        return _packValidationData(false, type(uint48).max, 0);
+    }
+
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        virtual
+        returns  (ValidationData)
     {
 
         return _packValidationData(false, type(uint48).max, 0);

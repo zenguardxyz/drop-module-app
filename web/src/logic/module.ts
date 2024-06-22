@@ -11,11 +11,11 @@ import {  getTokenDecimals, publicClient } from "./utils";
 import {  buildUnsignedUserOpTransaction } from "@/utils/userOp";
 import {  Hex, pad } from "viem";
 import { sepolia } from 'viem/chains'
-import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation, getAccountNonce } from 'permissionless'
+import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation, getAccountNonce, ENTRYPOINT_ADDRESS_V06 } from 'permissionless'
 import { sendUserOperation } from "./permissionless";
 
-const safe7579Module = "0x94952C0Ea317E9b8Bca613490AF25f6185623284"
-const safeFaucetModule = "0xcf2e2945838dC48Dafe3d4973A88bd5C979702B1"
+const safe7579Module = "0x45682f69ccA1831efC48575a94e2D7a633D67C4D"
+const safeFaucetModule = "0x3A553eCECB85A6fda4d3b18eF0CCfE130289D9D3"
 const smartWalletImp = "0x000100abaad02f1cfC8Bbe32bD5a564817339E72"
 
 
@@ -82,6 +82,7 @@ const fetchFaucets = async (chainId: string ): Promise<any> => {
 export const sendTransaction = async (chainId: string, recipient: string, amount: bigint, data: any, walletProvider: any, safeAccount: string): Promise<any> => {
 
    
+    console.log(await fetchFaucets(chainId))
     const abi = [
         'function execute(uint256 faucetId, address to, uint256 value, bytes calldata data) external',
       ]
@@ -98,7 +99,7 @@ export const sendTransaction = async (chainId: string, recipient: string, amount
     
     const nonce = await getAccountNonce(publicClient(parseInt(chainId)), {
         sender: safeAccount as Hex,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: ENTRYPOINT_ADDRESS_V06,
         key: key
     })
 
@@ -109,8 +110,8 @@ export const sendTransaction = async (chainId: string, recipient: string, amount
         nonce,
       )
 
-      const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.7">) {
-        return "0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.6">) {
+        return "0x"
     
     }
 
@@ -192,14 +193,13 @@ const buildInstallExecutor = async ( ): Promise<BaseTransaction> => {
 }
 
 
-const buildAddFaucet = async (token: string, amount: string, refreshInterval: number, validUntil: number ): Promise<BaseTransaction> => {
+const buildAddFaucet = async (token: string, amount: string, refreshInterval: number, validUntil: number, supportedAccounts: string[] ): Promise<BaseTransaction> => {
 
-    
+    console.log(supportedAccounts)
     const info = await getSafeInfo()
     const provider = await getProvider()
 
-    // const sessionData = {account: info.safeAddress, token: token, validAfter: validAfter, validUntil: validUntil, limitAmount: parseUnits(amount, token!= ZeroAddress ? await getTokenDecimals(token, provider) : 'ether'), limitUsed: 0, lastUsed: 0, refreshInterval: refreshInterval }
-    const faucetData = {account: info.safeAddress, token: token, validAfter: 0, validUntil: validUntil, limitAmount: parseUnits(amount, token!= ZeroAddress ? await getTokenDecimals(token, provider) : 'ether'), refreshInterval: refreshInterval, eoa: {singletons: [], versions: [], supported: true}, safe: {singletons: [], versions: ["1.3.1", "1.4.1"], supported: true}, cbSW: {singletons: [smartWalletImp], versions: [], supported: false} }
+    const faucetData = {account: info.safeAddress, token: token, validAfter: 0, validUntil: validUntil, limitAmount: parseUnits(amount, token!= ZeroAddress ? await getTokenDecimals(token, provider) : 'ether'), refreshInterval: refreshInterval, eoa: {singletons: [], versions: [], supported: supportedAccounts.includes('eoa')}, safe: {singletons: [], versions: ["1.3.1", "1.4.1"], supported: supportedAccounts.includes('safe')}, cbSW: {singletons: [smartWalletImp], versions: [], supported: supportedAccounts.includes('cbsw')} }
 
 
     // Updating the provider RPC if it's from the Safe App.
@@ -224,7 +224,7 @@ const buildAddFaucet = async (token: string, amount: string, refreshInterval: nu
 
 
 
-export const addFaucetModule = async (token: string, amount: string, refreshInterval: number, validUntil: number) => {
+export const addFaucetModule = async (token: string, amount: string, refreshInterval: number, validUntil: number, supportedAccounts: string[]) => {
 
     
     if (!await isConnectedToSafe()) throw Error("Not connected to a Safe")
@@ -238,13 +238,14 @@ export const addFaucetModule = async (token: string, amount: string, refreshInte
         txs.push(await buildEnableModule(info.safeAddress, safe7579Module))
         txs.push(await buildUpdateFallbackHandler(info.safeAddress, safe7579Module))
         txs.push(await buildInitSafe7579())
+        txs.push(await buildInstallValidator())
+        txs.push(await buildInstallExecutor())
     }
     else if (!await isModuleInstalled(info.safeAddress, safeFaucetModule, 1)) {
         txs.push(await buildInstallValidator())
         txs.push(await buildInstallExecutor())
         }
-        
-        txs.push(await buildAddFaucet(token, amount, refreshInterval, validUntil))
+        txs.push(await buildAddFaucet(token, amount, refreshInterval, validUntil, supportedAccounts))
 
 
 

@@ -30,7 +30,14 @@ export const isModuleEnabled = async(safeAddress: string, module: string): Promi
 
 export const isModuleInstalled= async(safeAddress: string, module: string, moduleType: number): Promise<boolean> => {
     const safe = await getSafe(safeAddress)
-    return await safe.isModuleInstalled(moduleType, module, '0x')
+    let isInstalled = false;
+    try { 
+        isInstalled = await safe.isModuleInstalled(moduleType, module, '0x');
+    }
+    catch(e) {
+        console.log('Not Installed');
+    }
+    return isInstalled;
 }
 
 
