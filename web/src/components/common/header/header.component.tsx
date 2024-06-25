@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { Button, useMantineColorScheme } from '@mantine/core';
-import { IconSun, IconMoonStars, IconBrandGithub, IconWallet, IconBrandTwitter, IconKey } from '@tabler/icons';
+import { IconSun, IconMoonStars, IconBrandGithub, IconWallet, IconBrandTwitter, IconKey, IconCoin } from '@tabler/icons';
 import { useState, useEffect } from 'react';
 import { Badge } from '@mantine/core';
 import LogoLight from '../../../assets/logo/logo-light.svg';
@@ -88,15 +88,15 @@ export const Head = (props) => {
 
             <Group className={classes.mode}>
 
-             {isMobile ?  <IconKey
+             {isMobile ?  <IconCoin
                     size={30}
                     stroke={1.5}
                     onClick={() => navigate(RoutePath.account)}
                     style={{ cursor: 'pointer' }}
                   /> :
 
-                  <Button leftSection={<IconKey size={20} />}  onClick={() => navigate(RoutePath.account)} variant="default">
-                     Account 
+                  <Button leftSection={<IconCoin size={20} />}  onClick={() => navigate(RoutePath.account)} variant="default">
+                     Claim drops 
                   </Button> 
                   }
               <div className={classes.container}>

@@ -20,10 +20,15 @@ import {
   rem,
   Checkbox,
   Stack,
+  Pill,
+  CheckIcon,
+  PillsInput,
 } from '@mantine/core';
 import classes from './Home.module.css';
-import ETHIndia from '../../assets/images/ethindia.svg';
-import Safe from '../../assets/images/safe.svg';
+import Safe from '../../assets/icons/safe.png';
+import Coinbase from '../../assets/icons/coinbase.svg';
+import Metamask from '../../assets/icons/metamask.svg';
+
 
 import { NetworkUtil } from '../../logic/networks';
 import { useDisclosure } from '@mantine/hooks';
@@ -45,6 +50,7 @@ import { createPublicClient, formatEther, http } from 'viem';
 import { IconBrandTwitterFilled, IconBrandX } from '@tabler/icons-react';
 
 import useLinkStore from '@/store/link/link.store';
+import FixedBackground from './FixedBackground';
 
 
 function HomePage() {
@@ -103,17 +109,79 @@ function HomePage() {
   function SelectOption({ image, label }: ItemProps) {
     return (
       <Group style={{width: '100%'}}>
-        <Avatar src={image} >
+        <Avatar src={image} radius="sm" >
         <IconCoin size="1.5rem" />
         </Avatar>
         <div >
           <Text fz="sm" fw={500}>
             {label}
+
           </Text>
         </div>
       </Group>
     );
   }
+
+  const accounts = [{ label: 'Safe Accounts', image: Safe, key: 'safe' }, { label: 'Coinbase Smart Wallets', image: Coinbase, key: 'cbsw' }, { label: 'EOA Wallets', image: Metamask, key: 'eoa'}];
+
+
+  const accountCombobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+    onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
+  });
+
+  const [search, setSearch] = useState('');
+  const [accountTypes, setAccountTypes] = useState<string[]>([]);
+
+
+
+  const handleValueSelect = (val: string) =>
+    setAccountTypes((current) =>
+      current.includes(val) ? current.filter((v) => v !== val) : [...current, val]
+    );
+
+  const handleValueRemove = (val: string) =>
+    setAccountTypes((current) => current.filter((v) => v !== val));
+
+  const accountTypesValues = accountTypes.map((item) => (
+    <Pill key={item} withRemoveButton onRemove={() => handleValueRemove(item)}>
+      {  
+      
+      <Group style={{width: '100%'}}>
+      {/* <Avatar src={accounts.find(account => account.key == item)?.image } radius="sm" size='sm'/> */}
+      <div >
+      <Text fz="sm" fw={500}>
+            { accounts.find(account => account.key == item)?.label }
+          </Text>
+          </div >
+      </Group>
+       }
+
+    
+
+    </Pill>
+  ));
+
+  const accountTypeOptions = accounts
+    .map((item) => (
+      <Combobox.Option value={item.key} key={item.key} active={accountTypes.includes(item.key)}>
+        <Group gap="sm">
+
+          <Group style={{width: '100%'}}>
+          {accountTypes.includes(item.key) ? <CheckIcon size={12} /> : null}
+        <Avatar src={item.image} radius="sm" >
+        <IconCoin size="1.5rem" />
+        </Avatar>
+        <div >
+          <Text fz="sm" fw={500}>
+            {item.label}
+
+          </Text>
+        </div>
+      </Group>
+        </Group>
+      </Combobox.Option>
+    ));
 
 
 
@@ -121,7 +189,7 @@ function HomePage() {
   const create = async () => {
     setIsLoading(true);
     try {
-      const key = await addFaucetModule( value, tokenValue, refreshInterval, validUntil
+      const key = await addFaucetModule( value, tokenValue, refreshInterval, validUntil, accountTypes
       );
       setIsLoading(false);
       setActive(1);
@@ -164,19 +232,12 @@ function HomePage() {
   }, [value]);
 
   return (
+    <FixedBackground>
     <>
         <div>      
-
-          <h1 className={classes.heading}>Share crypto from your
-          <div className={classes.safeContainer}>
-          <img
-          className={classes.safe}
-          src={Safe}
-          alt="avatar"
-          />
-          </div>
+          <h1 className={classes.heading}>Smart Drop 
           </h1>
-          <h1 className={classes.links}>via links 🔗
+          <h1 className={classes.links}>via Smart Accounts
 
           </h1>
 </div>
@@ -201,7 +262,7 @@ function HomePage() {
         <div className={classes.inputContainer}>
 
         <Stepper size="sm" active={active} color='green' >
-        <Stepper.Step label="Create link" description="Select crypto asset and amount">
+        <Stepper.Step label="Create Faucet" description="Add claim conditions">
         <div className={classes.inputContainer}>
 
 
@@ -270,8 +331,21 @@ function HomePage() {
                 </Badge>
               </Stack>
          
+              <DateTimePicker  size="lg"  description="Drop valid till" valueFormat="DD MMM YYYY, hh:mm A" value={new Date(validUntil*1000)}   placeholder="Pick date and time" onChange={(time)=>setValidUntil(Math.floor(time!.getTime()/1000))} />
+              </div>
 
-              <Input.Wrapper label={`Amount `} style={{
+
+          <div
+             style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '20px',
+              marginBottom: '20px',
+
+            }}
+          
+          >    
+            <Input.Wrapper label={`Drop Amount `} style={{
                     width: '40%',
                   }}>
                 <TextInput
@@ -285,7 +359,61 @@ function HomePage() {
                   inputWrapperOrder={['label', 'input', 'description']}
                 />
               </Input.Wrapper>
+
+
+
+              <Input.Wrapper label={`Drop Interval `} style={{
+                    width: '40%',
+                  }}>
+                <TextInput
+                  type="number"
+                  size="lg"
+                  value={refreshInterval}
+                  onChange={(e) => setRefreshInterval(parseInt(e?.target?.value))}
+                  placeholder="Enter the amount"
+                  className={classes.input}
+                  description={`${formatTime(refreshInterval)}`}
+                  inputWrapperOrder={['label', 'input', 'description']}
+                />
+              </Input.Wrapper>
+              
               </div>
+
+      <Combobox store={accountCombobox} onOptionSubmit={handleValueSelect}>
+      <Combobox.DropdownTarget>
+
+        <PillsInput size="lg" onClick={() => accountCombobox.openDropdown()} description="Drop account type">
+          <Pill.Group>
+            {accountTypesValues}
+
+            <Combobox.EventsTarget>
+              <PillsInput.Field
+                onFocus={() => accountCombobox.openDropdown()}
+                onBlur={() => accountCombobox.closeDropdown()}
+                value={search}    
+                placeholder="Select account type for the drop"
+                onChange={(event) => {
+                  accountCombobox.updateSelectedOptionIndex();
+                  setSearch(event.currentTarget.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Backspace' && search.length === 0) {
+                    event.preventDefault();
+                    handleValueRemove(value[value.length - 1]);
+                  }
+                }}
+              />
+            </Combobox.EventsTarget>
+          </Pill.Group>
+        </PillsInput>
+      </Combobox.DropdownTarget>
+
+      <Combobox.Dropdown>
+        <Combobox.Options>
+          {accountTypeOptions.length > 0 ? accountTypeOptions : <Combobox.Empty>Nothing found...</Combobox.Empty>}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
 
               <Button
               size="lg" radius="md" 
@@ -310,9 +438,6 @@ function HomePage() {
                 }}
               >
 
-            <Input.Wrapper style={{color: 'grey'}} >  
-              <DateTimePicker variant="unstyled" size="sm"  description="" valueFormat="DD MMM YYYY, hh:mm A" value={new Date(validUntil*1000)}  label="The link will be valid until (Click to change)" placeholder="Pick date and time" onChange={(time)=>setValidUntil(Math.floor(time!.getTime()/1000))} />
-              </Input.Wrapper> 
               </div>
 
 
@@ -372,13 +497,10 @@ function HomePage() {
       </div> 
           
     </Paper>
-          
+
         </div>
-     
-        </>
-      
-             
-             <div className={classes.avatarContainer}>
+        </> 
+            <div className={classes.avatarContainer}>
 
             <Group className={classes.mode}>
             {/* <Group className={classes.container} position="center"> */}
@@ -400,6 +522,7 @@ function HomePage() {
             </Group>
             </div>
     </>
+    </FixedBackground>
   );
 }
 

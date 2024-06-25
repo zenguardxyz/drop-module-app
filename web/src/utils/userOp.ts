@@ -204,14 +204,14 @@ export const buildUnsignedUserOpTransaction = (
   from: string,
   action: Action,
   nonce: bigint,
-): UserOperation<"v0.7"> => {
+): UserOperation<"v0.6"> => {
 
   const callData =  encodeUserOpCallData({actions: [action]})
 
   return {
     sender: from as Hex,
     nonce: nonce,
-    // initCode: '0x',
+    initCode: '0x',
     callData: callData,
     preVerificationGas: BigInt(0),
     // ...packGasParameters({
@@ -220,7 +220,7 @@ export const buildUnsignedUserOpTransaction = (
       maxPriorityFeePerGas: BigInt(0),
       maxFeePerGas: BigInt(0),
     // }),
-    // paymasterAndData: ethers.hexlify('0x'),
+    paymasterAndData: ethers.hexlify('0x') as Hex,
     signature: "0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" as Hex,
   }
 }
