@@ -45,20 +45,25 @@
     border-radius: 50%;
 }
 
-.heading{
+
+
+.heading {
+  font-size: 40px;
+  background: #00ff00;
+  background: -webkit-linear-gradient(to left, #00c6ff 0%, #0072ff 100%);
+  background: -moz-linear-gradient(to left, #00c6ff 0%, #0072ff 100%);
+  background: linear-gradient(to left, #00c6ff 0%, #0072ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-align: center;
-  background: #00FF00;
-background: -webkit-linear-gradient(to left, #00FF00 0%, #00FFFF 100%);
-background: -moz-linear-gradient(to left, #00FF00 0%, #00FFFF 100%);
-background: linear-gradient(to left, #00FF00 0%, #00FFFF 100%);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
+  font-weight: 700;
+  margin-bottom: 0;
 }
 
 
 .btn {
-  background-image: linear-gradient(to right, #1d976c 0%, #93f9b9 51%, #1d976c 100%);
-
+  background-image: linear-gradient(to right, #00c6ff 0%, #0072ff 51%, #610ad3 100%);
+ 
   transition: 0.5s;
   background-size: 200% auto;
   color: white;
@@ -66,10 +71,9 @@ background: linear-gradient(to left, #00FF00 0%, #00FFFF 100%);
 
 .btn:hover {
   background-position: right center; /* change the direction of the change here */
-  color: #fff;
+  background-image: linear-gradient(to right, #0072ff 0%, #00c6ff 51%, #610ad3 100%);
   text-decoration: none;
 }
-
 
 .actionsContainer{
     display: flex;
@@ -85,6 +89,21 @@ background: linear-gradient(to left, #00FF00 0%, #00FFFF 100%);
   font-weight: 600;
   text-align: center;
 }
+
+.normaltext {
+  padding-top: 15px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.card {
+  position: relative;
+  overflow: visible;
+  padding: var(--mantine-spacing-xl);
+  /* width: 300px; */
+  /* padding-top: calc(var(--mantine-spacing-xl) * 1.5 + rem(20px)); */
+}
+
 
 .footerHeading {
   font-size: 14px;
