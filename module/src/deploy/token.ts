@@ -8,9 +8,9 @@ const deploy: DeployFunction = async ({ deployments, getNamedAccounts, network }
   const { deployer } = await getNamedAccounts()
   const { deploy } = deployments
 
-  await deploy('HariWillibaldToken', {
+  await deploy('OnchainSummerToken', {
     from: deployer,
-    args: [deployer],
+    args: ["0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db"],
     log: true,
     deterministicDeployment: true,
   })
