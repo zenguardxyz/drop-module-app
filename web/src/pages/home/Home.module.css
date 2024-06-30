@@ -22,7 +22,7 @@
   flex-direction: row;
 
 }
-hea
+
 .safe{
   /* height: 100px; */
   width: 130px;
@@ -90,7 +90,7 @@ hea
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-top: 20px;
 }
 
 .selectGroup {

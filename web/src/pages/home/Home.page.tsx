@@ -8,7 +8,6 @@ import {
   Group,
   Input,
   Paper,
-  Select,
   useMantineColorScheme,
   Combobox,
   useCombobox,
@@ -17,8 +16,6 @@ import {
   Alert,
   TextInput,
   Stepper,
-  rem,
-  Checkbox,
   Stack,
   Pill,
   CheckIcon,
@@ -46,8 +43,8 @@ import { getIconForId, getTokenInfo, getTokenList, tokenList } from '@/logic/tok
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { getSafeInfo, isConnectedToSafe } from '@/logic/safeapp';
 import { formatTime, getTokenBalance } from '@/logic/utils';
-import { createPublicClient, formatEther, http } from 'viem';
-import { IconBrandTwitterFilled, IconBrandX } from '@tabler/icons-react';
+import {formatEther } from 'viem';
+import { IconBrandX } from '@tabler/icons-react';
 
 import useLinkStore from '@/store/link/link.store';
 import FixedBackground from './FixedBackground';
@@ -57,7 +54,6 @@ function HomePage() {
   const [opened, { open, close }] = useDisclosure(false);
   const navigate = useNavigate();
   
-
 
   const { colorScheme } = useMantineColorScheme();
 
@@ -75,7 +71,6 @@ function HomePage() {
 
   const [network, setNetwork] = useState('');
   const [sessionCreated, setSessionCreated] = useState(false);
-  const [sessionKey, setSessionKey] = useState('');
   const [sharableLink, setSharableLink] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [safeError, setSafeError] = useState(false);
@@ -251,7 +246,7 @@ function HomePage() {
     { safeError && <Alert variant="light" color="yellow" radius="lg" title="Open as Safe App">
 
      Try this application as a <span/>
-      <Anchor href="https://app.safe.global/share/safe-app?appUrl=https://safe-passkey.zenguard.xyz&chain=sep">
+      <Anchor href="https://app.safe.global/share/safe-app?appUrl=https://smart-drop.zenguard.xyz&chain=sep">
       Safe App
         </Anchor> <span/>
         on Safe Wallet.
@@ -262,7 +257,7 @@ function HomePage() {
         <div className={classes.inputContainer}>
 
         <Stepper size="sm" active={active} color='green' >
-        <Stepper.Step label="Create Faucet" description="Add claim conditions">
+        <Stepper.Step label="Create Drop" description="Add claim conditions">
         <div className={classes.inputContainer}>
 
 
@@ -415,7 +410,7 @@ function HomePage() {
       </Combobox.Dropdown>
     </Combobox>
 
-              <Button
+        <Button
               size="lg" radius="md" 
               fullWidth
               color="green"
@@ -424,21 +419,8 @@ function HomePage() {
               loaderProps={{ color: 'white', type: 'dots', size: 'md' }}
               loading={isLoading}
             >
-              {isLoading ? 'Creating Link ...' : 'Create Link'}
+              {isLoading ? 'Creating Drop ...' : 'Create Drop'}
             </Button>     
-
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: '20px',
-                  marginBottom: '20px',
-                  alignSelf: 'center',
-                }}
-              >
-
-              </div>
 
 
             </div>
@@ -449,26 +431,15 @@ function HomePage() {
 
 
         </Stepper.Step>
-        <Stepper.Step label="Share link" description="Share this link to claim crypto">
+        <Stepper.Step label="Share drop" description="Confirm drop creation">
         <div>
 
-              <h1 className={classes.heading} style={{fontSize: 30}}>Safe link is Ready!</h1>
+              <h1 className={classes.heading} style={{fontSize: 30}}>Smart Drop is Ready!</h1>
 
               <p className={classes.subheading} style={{ textAlign: 'center' }}>
                 
-               This link account is like a magic wand. Check out the magic of this link <Anchor target='_blank' href={sharableLink} >here </Anchor> ❤️ ❤️
+               This drop is like a magic wand. Check out the magic of this drop <Anchor target='_blank' href={sharableLink} >here </Anchor> ❤️ ❤️
               </p>
-
-
-              <div className={classes.copyContainer}>
-                <Input
-                  className={classes.input}
-                  // style={{ width: '400px' }}
-                  value={sharableLink}
-                  placeholder={sharableLink}
-                />
-            
-              </div>
               <div className={classes.actions}>
             
             <Button size="lg" radius="md"
@@ -513,7 +484,7 @@ function HomePage() {
             <IconBrandGithub
             size={30}
             stroke={1.5}
-            onClick={() => window.open("https://github.com/koshikraj/safe-link")}
+            onClick={() => window.open("https://github.com/koshikraj/smart-drop")}
             style={{ cursor: 'pointer' }}
             />
 
