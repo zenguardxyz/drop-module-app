@@ -62,7 +62,7 @@ export async function signAddress(string: string, privateKey: string) {
 
 
 
-const fetchFaucets = async (chainId: string ): Promise<any> => {
+export const fetchFaucets = async (chainId: string ): Promise<any> => {
 
 
     const provider = await getJsonRpcProvider(chainId)
@@ -79,15 +79,16 @@ const fetchFaucets = async (chainId: string ): Promise<any> => {
 
 
 
-export const sendTransaction = async (chainId: string, recipient: string, amount: bigint, data: any, walletProvider: any, safeAccount: string): Promise<any> => {
+export const sendTransaction = async (chainId: string, recipient: string, amount: bigint, data: any, safeAccount: string, faucetIndex: number): Promise<any> => {
 
    
-    console.log(await fetchFaucets(chainId))
+    console.log(safeAccount, faucetIndex)
+
     const abi = [
         'function execute(uint256 faucetId, address to, uint256 value, bytes calldata data) external',
       ]
 
-    const execCallData = new Interface(abi).encodeFunctionData('execute', [2, recipient, amount, data])
+    const execCallData = new Interface(abi).encodeFunctionData('execute', [faucetIndex, recipient, amount, data])
 
     const call = { target: safeFaucetModule as Hex, value: 0, callData: execCallData as Hex }
 
@@ -195,7 +196,6 @@ const buildInstallExecutor = async ( ): Promise<BaseTransaction> => {
 
 const buildAddFaucet = async (token: string, amount: string, refreshInterval: number, validUntil: number, supportedAccounts: string[] ): Promise<BaseTransaction> => {
 
-    console.log(supportedAccounts)
     const info = await getSafeInfo()
     const provider = await getProvider()
 

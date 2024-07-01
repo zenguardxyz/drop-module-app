@@ -6,6 +6,7 @@ import Matic from '../assets/icons/matic.svg';
 import USDT from '../assets/icons/usdt.svg';
 import EURe from '../assets/icons/eure.svg';
 import USDe from '../assets/icons/usde.svg';
+import Boge from '../assets/icons/boge.jpg';
 
 
 export const badgeIcons = [
@@ -59,7 +60,14 @@ export const tokenList: any = {
         label: 'ETH',
         image: ETH,
         description: 'Ether currency',
-      },                                                                                                    
+      },    
+      
+      {
+        value: '0xC432004323f06ca58362A5EFd993A368c93d032b',
+        label: 'OST',
+        image: Base,
+        description: 'Onchain Summer Token',
+      },     
 
   ],
 
@@ -75,7 +83,13 @@ export const tokenList: any = {
         label: 'USDC',
         image: USDe,
         description: 'Circle USDS token',
-      },                                                                                                   
+      },     
+      {
+        value: '0x4e496c0256FB9D4CC7Ba2fdF931bC9CbB7731660',
+        label: 'BOGE',
+        image: Boge,
+        description: 'BOGE token',
+      },                                                                                                  
 
   ],
 

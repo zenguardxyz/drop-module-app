@@ -42,7 +42,7 @@ export const sendUserOperation = async (chainId: string, unsignedUserOp: UserOpe
     })
 
   const paymasterClient = createPimlicoPaymasterClient({
-    transport: http(rpcUrl),
+    transport: http(chain == base ? pimlicoEndpoint : rpcUrl),
     entryPoint: ENTRYPOINT_ADDRESS_V06,
   });
 
