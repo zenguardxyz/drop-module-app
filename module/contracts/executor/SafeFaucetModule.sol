@@ -2,10 +2,8 @@
 pragma solidity ^0.8.23;
 
 import { ERC7579ValidatorBase } from "../module-bases/ERC7579ValidatorBase.sol";
-import { PackedUserOperation} from
+import { PackedUserOperation } from
     "@account-abstraction/contracts/core/UserOperationLib.sol";
-import { UserOperation } from "account-abstraction-v0.6/interfaces/UserOperation.sol";
-
 
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
@@ -16,7 +14,6 @@ import { ERC7579ExecutorBase } from "../module-bases/ERC7579ExecutorBase.sol";
 import { ICoinbaseSmartWallet } from "../smart-wallet/interface/ICoinbaseSmartWallet.sol";
 import { ISafe } from "../smart-wallet/interface/ISafe.sol";
 
-
 contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
     using SignatureCheckerLib for address;
     using ExecutionLib for bytes;
@@ -25,6 +22,8 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
     FaucetData[] public faucets;
 
     mapping(address => mapping(uint256 => FaucetUserData)) public faucetUsers;
+
+    mapping(address => uint256) public faucetCounter;
 
     enum AccountType { Safe, CoinbaseSW, eoa }
 
@@ -54,6 +53,7 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
        uint256 faucetId;
        uint256 limitUsed;
        uint48 lastUsed;    
+       bool exists;
     }
             
     event SessionKeyAdded(address indexed sessionKey, address indexed account);
@@ -69,7 +69,6 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
 
         // delete the Safe account sessions
     }
-    
 
     function validateUserOp(
         PackedUserOperation calldata userOp,
@@ -79,15 +78,6 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
         view
         override
         returns (ValidationData)
-    {
-
-        return _packValidationData(false, type(uint48).max, 0);
-    }
-
-    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash)
-        external
-        virtual
-        returns  (ValidationData)
     {
 
         return _packValidationData(false, type(uint48).max, 0);
@@ -144,6 +134,11 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
         uint256 tokenValue = value == 0 ? callDataAmount : value;
 
 
+        if( !faucetUsers[toAddress][faucetId].exists)
+        faucetCounter[toAddress]++;
+
+        require(faucetCounter[toAddress] <= 1);
+
         if(!checkAccountAcceptance(faucetId, toAddress)) {
             revert("Invalid target address");
         }
@@ -152,7 +147,7 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
         if(!updateSpendLimitUsage(tokenValue, faucetId, token, toAddress))  {
             revert ExecutionFailed();
         }
-
+   
         return _execute(msg.sender, to, value, data);
 
 
@@ -286,6 +281,7 @@ contract SafeFaucetModule is ERC7579ValidatorBase, ERC7579ExecutorBase {
             faucetUser.limitUsed = newUsage;
             faucetUser.lastUsed = uint48(block.timestamp);
         }
+        faucetUser.exists = true;
 
         return true;
     }

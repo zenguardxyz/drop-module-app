@@ -247,6 +247,69 @@ describe('Spendlimit session key - Basic tests', () => {
       expect(await ethers.provider.getBalance(await safe.getAddress())).to.be.eq(ethers.parseEther('0'))
 
     })
+
+    it('should add a spendlimit validator and execute ops with signatures', async () => {
+      const { user1, safe,  faucetModule, sbSWSingleton, safe7579, entryPoint, relayer } = await setupTests()
+
+      await entryPoint.depositTo(await safe.getAddress(), { value: ethers.parseEther('1.0') })
+
+      await user1.sendTransaction({ to: await safe.getAddress(), value: ethers.parseEther('2') })
+
+
+      const abi = [
+        'function execute(uint256 faucetId, address to, uint256 value, bytes calldata data) external',
+      ]
+      
+      const execCallData1 = new ethers.Interface(abi).encodeFunctionData('execute', [0,  user1.address, ethers.parseEther('1'), '0x' as Hex])
+      const execCallData2 = new ethers.Interface(abi).encodeFunctionData('execute', [1,  user1.address, ethers.parseEther('1'), '0x' as Hex])
+
+
+      const call1 = {target: await faucetModule.getAddress() as Hex, value: 0, callData: execCallData1 as Hex}
+      const call2 = {target: await faucetModule.getAddress() as Hex, value: 0, callData: execCallData2 as Hex}
+
+     
+      const currentTime = Math.floor(Date.now()/1000)
+      const faucetData = {account: await safe.getAddress(), token: ZeroAddress, validAfter: 0, validUntil: currentTime + 100, limitAmount: ethers.parseEther('1'), refreshInterval: 0, eoa: {singletons: [], versions: [], supported: true}, safe: {singletons: [], versions: ["1.3.0", "1.4.1"], supported: true}, cbSW: {singletons: [await sbSWSingleton.getAddress()], versions: [], supported: false} }
+
+
+      await execSafeTransaction(safe, await safe7579.initializeAccount.populateTransaction([], [], [], [], {registry: ZeroAddress, attesters: [], threshold: 0}));
+
+      await execSafeTransaction(safe, {to: await safe.getAddress(), data:  ((await safe7579.installModule.populateTransaction(1, await faucetModule.getAddress(), '0x')).data as string), value: 0});
+      await execSafeTransaction(safe, {to: await safe.getAddress(), data:  ((await safe7579.installModule.populateTransaction(2, await faucetModule.getAddress(), '0x')).data as string), value: 0});
+      
+      // Adding first faucet
+      await execSafeTransaction(safe, await faucetModule.addFaucet.populateTransaction(faucetData))
+
+      // Adding second faucet
+      await execSafeTransaction(safe, await faucetModule.addFaucet.populateTransaction(faucetData))
+
+      
+
+      const key = BigInt(pad(await faucetModule.getAddress() as Hex, {
+          dir: "right",
+          size: 24,
+        }) || 0
+      )
+      let currentNonce = await entryPoint.getNonce(await safe.getAddress(), key);
+
+      
+
+      let userOp1 = buildUnsignedUserOpTransaction(await safe.getAddress(), currentNonce, call1)
+
+      
+      await logGas('Execute UserOp without a prefund payment', entryPoint.handleOps([userOp1], relayer))
+
+      currentNonce = await entryPoint.getNonce(await safe.getAddress(), key);
+      let userOp2 = buildUnsignedUserOpTransaction(await safe.getAddress(), currentNonce, call2)
+
+
+      await logGas('Execute UserOp without a prefund payment', entryPoint.handleOps([userOp2], relayer))
+
+      // The second userop will fail
+      expect(await ethers.provider.getBalance(await safe.getAddress())).to.be.eq(ethers.parseEther('1'))
+
+
+    })
   
 })
 

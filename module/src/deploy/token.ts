@@ -10,7 +10,8 @@ const deploy: DeployFunction = async ({ deployments, getNamedAccounts, network }
 
   await deploy('OnchainSummerToken', {
     from: deployer,
-    args: ["0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db"],
+    // args: ["0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db"],
+    args: [deployer],
     log: true,
     deterministicDeployment: true,
   })

@@ -57,8 +57,8 @@ export const getSafe7579 = async () => {
 }
 
 export const getTestToken = async () => {
-  const TestToken = await deployments.get('HariWillibaldToken')
-  return await ethers.getContractAt('HariWillibaldToken', TestToken.address)
+  const TestToken = await deployments.get('OnchainSummerToken')
+  return await ethers.getContractAt('OnchainSummerToken', TestToken.address)
 }
 
 export const getEntryPoint = async () => {
@@ -146,7 +146,7 @@ export const deployContract = async (deployer: Signer, source: string): Promise<
   const output = await compile(source)
   const transaction = await deployer.sendTransaction({ data: output.data, gasLimit: 6000000 })
   const receipt = await transaction.wait()
-  const contractAddress = receipt.contractAddress
+  const contractAddress = receipt!.contractAddress
   if (contractAddress === null) {
     throw new Error(`contract deployment transaction ${transaction.hash} missing address`)
   }

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import { UserOperation } from "account-abstraction-v0.6/interfaces/UserOperation.sol";
 import "./DataTypes.sol";
 import { IERC7579Account } from "./interfaces/IERC7579Account.sol";
 
@@ -26,7 +25,7 @@ interface ISafe7579 is IERC7579Account {
      *         Safe's signers
      */
     function validateUserOp(
-        UserOperation memory userOp,
+        PackedUserOperation memory userOp,
         bytes32 userOpHash,
         uint256 missingAccountFunds
     )
