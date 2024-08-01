@@ -32,28 +32,6 @@ export function getIconForId(id: any) {
 
 export const tokenList: any = {
 
-  
-  11155111: [
-    {
-        value: '0x0000000000000000000000000000000000000000',
-        label: 'ETH',
-        image: ETH,
-        description: 'Ether currency',
-      },     
-      {
-        value: '0xd58C5Db52B5B3Eb24EE38AF287d2cb0F424172A5',
-        label: 'EURe',
-        image: EURe,
-        description: 'Monerium EUR emoney',
-      },   
-      {
-        value: '0x8bA8662a7C5C6Be4B4ad7049c5DbF59aaCC2cf1e',
-        label: 'USDe',
-        image: USDe,
-        description: 'Monerium USD emoney',
-      },                                                                                                                                                                                                                                                                                                    
-
-  ],
   84532: [
     {
         value: '0x0000000000000000000000000000000000000000',

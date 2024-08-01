@@ -14,8 +14,8 @@ import { sepolia } from 'viem/chains'
 import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation, getAccountNonce, ENTRYPOINT_ADDRESS_V06 } from 'permissionless'
 import { sendUserOperation } from "./permissionless";
 
-const safe7579Module = "0x45682f69ccA1831efC48575a94e2D7a633D67C4D"
-const safeFaucetModule = "0x3A553eCECB85A6fda4d3b18eF0CCfE130289D9D3"
+const safe7579Module = "0x6572f74fb630cfe9132143dd4007ddd013e40f83"
+const safeFaucetModule = "0xDA3381B7b1FE8F6A69A13ba2f92401A31B81285D"
 const smartWalletImp = "0x000100abaad02f1cfC8Bbe32bD5a564817339E72"
 
 
@@ -100,18 +100,18 @@ export const sendTransaction = async (chainId: string, recipient: string, amount
     
     const nonce = await getAccountNonce(publicClient(parseInt(chainId)), {
         sender: safeAccount as Hex,
-        entryPoint: ENTRYPOINT_ADDRESS_V06,
+        entryPoint: ENTRYPOINT_ADDRESS_V07,
         key: key
     })
 
 
     let unsignedUserOp = buildUnsignedUserOpTransaction(
         safeAccount as Hex,
-        call,
+        [ call ],
         nonce,
       )
 
-      const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.6">) {
+      const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.7">) {
         return "0x"
     
     }
@@ -140,7 +140,7 @@ const buildInitSafe7579 = async ( ): Promise<BaseTransaction> => {
     )
 
     return {
-        to: safe7579Module,
+        to: info.safeAddress,
         value: "0",
         data: (await safeValidator.initializeAccount.populateTransaction([], [], [], [], {registry: ZeroAddress, attesters: [], threshold: 0})).data
     }

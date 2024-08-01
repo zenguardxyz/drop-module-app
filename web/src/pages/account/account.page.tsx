@@ -234,7 +234,8 @@ export const AccountPage = () => {
 
 
       setFaucetLoading(true);
-      const provider = await getJsonRpcProvider(chainId.toString());
+
+      setSelectedFaucet(0)
 
       setFaucets(await fetchFaucets(chainId.toString()))
 
@@ -246,18 +247,12 @@ export const AccountPage = () => {
       //   setBalance(await getTokenBalance(value, claimDetails?.account?.address , provider))
       //   }
 
-      if(faucets[selectedFaucet].token == ZeroAddress) {
-        setTokenValue(formatEther(faucets[selectedFaucet].limitAmount));
-    } else {
-      const provider = await getJsonRpcProvider(chainId.toString())
-      setTokenValue(formatUnits(faucets[selectedFaucet].limitAmount, await  getTokenDecimals(faucets[selectedFaucet].token, provider)))
-    }
 
       setFaucetLoading(false);
       window.addEventListener('resize', () => setDimensions({ width: window.innerWidth, height: window.innerHeight }));
       
     })();
-  }, [ safeAccount, chainId, sendSuccess, value, confirming, selectedFaucet]);
+  }, [ chainId]);
 
 
   
@@ -362,6 +357,7 @@ export const AccountPage = () => {
                         store={chainCombobox}
                         withinPortal={false}
                         onOptionSubmit={(val) => {
+                          setFaucets([])
                           setChainId(Number(val));
                           chainCombobox.closeDropdown();
                         }}
@@ -416,13 +412,20 @@ export const AccountPage = () => {
           <Combobox
                         store={faucetCombobox}
                         withinPortal={false}
-                        onOptionSubmit={(val) => {
+                        onOptionSubmit={async (val) => {
                           setSelectedFaucet(Number(val));
+                          if(faucets[Number(val)].token == ZeroAddress) {
+                            setTokenValue(formatEther(faucets[Number(val)].limitAmount));
+                        } else {
+                          const provider = await getJsonRpcProvider(chainId.toString())
+                          setTokenValue(formatUnits(faucets[Number(val)].limitAmount, await  getTokenDecimals(faucets[Number(val)].token, provider)))
+                        }
+                    
                           faucetCombobox.closeDropdown();
                         }}
                       >
                         <Combobox.Target>
-                        <Badge
+                        {!faucetLoading && faucets.length ? <Badge
                                 pl={0}
                                 style={{ cursor: 'pointer', width: '200px', height: '54px', padding: '10px'}} 
                                 radius='md'
@@ -440,7 +443,9 @@ export const AccountPage = () => {
                                 onClick={() => faucetCombobox.toggleDropdown()}
                               > 
                                 {`${shortenAddress(faucets[selectedFaucet].account)}`}
-                       </Badge>
+                       </Badge>  :
+                       <Badge/>
+                       }
                         </Combobox.Target>
                         <Combobox.Dropdown>
                           <Combobox.Options>{faucetOptions}</Combobox.Options>
@@ -451,7 +456,7 @@ export const AccountPage = () => {
             </Button>
           </div>
 
-      { !faucetLoading && <Paper radius="md" withBorder className={classes.card} mt={20}>
+      { !faucetLoading && faucets.length && <Paper radius="md" withBorder className={classes.card} mt={20}>
       <Text ta="center" fw={700} className={classes.title}>
         Drop details
       </Text>
