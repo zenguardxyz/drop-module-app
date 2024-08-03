@@ -91,12 +91,12 @@ export const Head = (props) => {
              {isMobile ?  <IconCoin
                     size={30}
                     stroke={1.5}
-                    onClick={() => navigate(RoutePath.account)}
+                    onClick={() => navigate(RoutePath.create)}
                     style={{ cursor: 'pointer' }}
                   /> :
 
-                  <Button leftSection={<IconCoin size={20} />}  onClick={() => navigate(RoutePath.account)} variant="default">
-                     Claim drops 
+                  <Button leftSection={<IconCoin size={20} />}  onClick={() => navigate(RoutePath.create)} variant="default">
+                     Create a Drop 
                   </Button> 
                   }
               <div className={classes.container}>

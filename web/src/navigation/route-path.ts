@@ -6,5 +6,6 @@ export enum RoutePath {
   home = '/',
   claim = '/claim',
   account = '/account',
+  create = '/create',
   notFound = '*',
 }

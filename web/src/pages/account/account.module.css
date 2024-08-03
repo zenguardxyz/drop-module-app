@@ -100,7 +100,7 @@
   position: relative;
   overflow: visible;
   padding: var(--mantine-spacing-xl);
-  /* width: 300px; */
+  width: 100%;
   /* padding-top: calc(var(--mantine-spacing-xl) * 1.5 + rem(20px)); */
 }
 

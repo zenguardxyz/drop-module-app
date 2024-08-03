@@ -7,6 +7,8 @@ import USDT from '../assets/icons/usdt.svg';
 import EURe from '../assets/icons/eure.svg';
 import USDe from '../assets/icons/usde.svg';
 import Boge from '../assets/icons/boge.jpg';
+import ZMUG from '../assets/icons/ZMUG.svg';
+import ZSHIRT from '../assets/icons/ZSHIRT.svg';
 
 
 export const badgeIcons = [
@@ -45,7 +47,19 @@ export const tokenList: any = {
         label: 'OST',
         image: Base,
         description: 'Onchain Summer Token',
-      },     
+      },
+      {
+        value: '0x3603033F35F295eDAd34d13A13628bdE247653D6',
+        label: 'ZMUG',
+        image: ZMUG,
+        description: 'ZenGuard Mug Token',
+      },  
+      {
+        value: '0x31F7F5E3f937AC60ABeA894F39e93d350FEb5937',
+        label: 'ZSHIRT',
+        image: ZSHIRT,
+        description: 'ZenGuard Shirt Token',
+      },       
 
   ],
 
@@ -67,7 +81,19 @@ export const tokenList: any = {
         label: 'BOGE',
         image: Boge,
         description: 'BOGE token',
-      },                                                                                                  
+      }, 
+      {
+        value: '0x3603033F35F295eDAd34d13A13628bdE247653D6',
+        label: 'ZMUG',
+        image: ZMUG,
+        description: 'ZenGuard Mug Token',
+      },  
+      {
+        value: '0x31F7F5E3f937AC60ABeA894F39e93d350FEb5937',
+        label: 'ZSHIRT',
+        image: ZSHIRT,
+        description: 'ZenGuard Shirt Token',
+      },                                                                                                   
 
   ],
 

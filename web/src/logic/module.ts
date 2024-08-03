@@ -15,7 +15,7 @@ import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation, getAccou
 import { sendUserOperation } from "./permissionless";
 
 const safe7579Module = "0x6572f74fb630cfe9132143dd4007ddd013e40f83"
-const safeFaucetModule = "0xDA3381B7b1FE8F6A69A13ba2f92401A31B81285D"
+const safeFaucetModule = "0xac84538d5167B93151678EA39a07a7cDa88A48C6"
 const smartWalletImp = "0x000100abaad02f1cfC8Bbe32bD5a564817339E72"
 
 

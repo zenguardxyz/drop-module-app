@@ -24,8 +24,16 @@ import Metamask from '../../assets/icons/metamask.svg';
 
 import Confetti from 'react-confetti';
 
+type AddressBook = {
+  [key: string]: {
+    name: string;
+  };
+};
 
 
+const dropDetail: AddressBook = {
+  '0x80dBBdc6b681f3bb0d58a67BACa025fEEb2275f9': {name: 'ZenGuard Drop'}
+}
 
 
 export const AccountPage = () => {
@@ -45,7 +53,7 @@ export const AccountPage = () => {
   const [sendLoader, setSendLoader] = useState(false);
   const [safeAccount, setSafeAccount] = useState<string>("");
   const [ authenticating, setAuthenticating ] = useState(false);
-  const [ faucets, setFaucets] = useState<any[]>([{token: ''}]);
+  const [ faucets, setFaucets] = useState<any[]>([]);
   const [ selectedFaucet, setSelectedFaucet] = useState(0);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [chainId, setChainId] = useState<number>(claimDetails.chainId);
@@ -176,7 +184,7 @@ export const AccountPage = () => {
         </Avatar>
         <div >
           <Text fz="sm" fw={500}>
-            {shortenAddress(faucet[1])}
+        { Object.keys(dropDetail).includes(faucet[1]) ? dropDetail[faucet[1]]?.name : 'Unknown Drop'}
           </Text>
         </div>
       </Group>
@@ -237,7 +245,8 @@ export const AccountPage = () => {
 
       setSelectedFaucet(0)
 
-      setFaucets(await fetchFaucets(chainId.toString()))
+      const faucetsFetched = await fetchFaucets(chainId.toString())
+      setFaucets(faucetsFetched)
 
       // setSafeAccount(faucets[faucets.length -1].account)
 
@@ -247,12 +256,21 @@ export const AccountPage = () => {
       //   setBalance(await getTokenBalance(value, claimDetails?.account?.address , provider))
       //   }
 
+        if(faucetsFetched.length) {
+        if(faucetsFetched[0].token == ZeroAddress) {
+          setTokenValue(formatEther(faucetsFetched[0].limitAmount));
+      } else {
+        const provider = await getJsonRpcProvider(chainId.toString())
+        setTokenValue(formatUnits(faucetsFetched[0].limitAmount, await  getTokenDecimals(faucetsFetched[0].token, provider)))
+      }
+    }
+
 
       setFaucetLoading(false);
       window.addEventListener('resize', () => setDimensions({ width: window.innerWidth, height: window.innerHeight }));
       
     })();
-  }, [ chainId]);
+  }, [ chainId ]);
 
 
   
@@ -325,7 +343,7 @@ export const AccountPage = () => {
 
 
     { error && <Notification withBorder radius='md' withCloseButton={false}  icon={<IconX style={{ width: rem(20), height: rem(20) }} />}  color="red" title="Claim Error!" mt="md">
-      Make sure you are claiming only on the supported wallet 🤝
+      You have already claimed a drop or the recipient wallet is not supported 🤝
       </Notification>
     }
 
@@ -414,12 +432,17 @@ export const AccountPage = () => {
                         withinPortal={false}
                         onOptionSubmit={async (val) => {
                           setSelectedFaucet(Number(val));
-                          if(faucets[Number(val)].token == ZeroAddress) {
-                            setTokenValue(formatEther(faucets[Number(val)].limitAmount));
-                        } else {
-                          const provider = await getJsonRpcProvider(chainId.toString())
-                          setTokenValue(formatUnits(faucets[Number(val)].limitAmount, await  getTokenDecimals(faucets[Number(val)].token, provider)))
+
+                          if(faucets.length) {
+                            if(faucets[Number(val)].token == ZeroAddress) {
+                              setTokenValue(formatEther(faucets[Number(val)].limitAmount));
+                          } else {
+                            const provider = await getJsonRpcProvider(chainId.toString())
+                            setTokenValue(formatUnits(faucets[Number(val)].limitAmount, await  getTokenDecimals(faucets[Number(val)].token, provider)))
+                          }
                         }
+                    
+                  
                     
                           faucetCombobox.closeDropdown();
                         }}
@@ -442,7 +465,7 @@ export const AccountPage = () => {
                                 // checked={false}
                                 onClick={() => faucetCombobox.toggleDropdown()}
                               > 
-                                {`${shortenAddress(faucets[selectedFaucet].account)}`}
+                                { Object.keys(dropDetail).includes(faucets[selectedFaucet].account) ? dropDetail[faucets[selectedFaucet].account]?.name : 'Unknown Drop'}
                        </Badge>  :
                        <Badge/>
                        }
@@ -464,7 +487,7 @@ export const AccountPage = () => {
 
       <Group justify="space-between" mt="xs">
         <Text fz="sm" c="dimmed">
-          Claimable:
+          Claimable Amount:
         </Text>
         <Text fz="sm" c="dimmed">
           { tokenValue} 
@@ -487,10 +510,10 @@ export const AccountPage = () => {
 
       <Group justify="space-between" mt="xs">
         <Text fz="sm" c="dimmed">
-          Claim Every:
+          Claimable:
         </Text>
         <Text fz="sm" c="dimmed">
-          { formatTime(Number(faucets[selectedFaucet].refreshInterval)) } 
+          { Number(faucets[selectedFaucet].refreshInterval) ? `Every ${formatTime(Number(faucets[selectedFaucet].refreshInterval))}` : "Only Once"} 
         </Text>
       </Group>
 
@@ -505,14 +528,6 @@ export const AccountPage = () => {
        { faucets[selectedFaucet].eoa.supported && <Avatar radius='sm' src={ Metamask } size='sm' /> }
         </Group>
       </Group>
-
-
-
-{/* 
-     { refreshIn > 0n && <Group justify="space-between" mt="md">
-        <Text fz="sm">Refreshes in:</Text>
-       <Badge color='green' size="sm"> {formatTime(Number(refreshIn))} </Badge>
-      </Group> } */}
     </Paper> }
 
           

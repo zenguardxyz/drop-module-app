@@ -8,8 +8,8 @@ import { AccountPage } from '@/pages/account/account.page';
 export const Navigation = () => {
   return (
     <Routes>
-      <Route path={RoutePath.home} element={<HomePage />} />
-      <Route path={RoutePath.account} element={<AccountPage />} />
+      <Route path={RoutePath.home} element={<AccountPage />} />
+      <Route path={RoutePath.create} element={<HomePage />} />
     </Routes>
   );
 };

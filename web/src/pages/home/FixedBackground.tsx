@@ -1,5 +1,5 @@
 // src/components/FixedBackground.js
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import styled from 'styled-components';
 import parachute1 from '../../assets/icons/drop-base.svg';
 import parachute2 from '../../assets/icons/drop-eth.svg';
@@ -42,11 +42,19 @@ const BackgroundWrapper = styled.div`
 `;
 
 const FixedBackground: React.FC<BackgroundWrapperProps> = ({ children }) => {
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+  console.log(isMobile)
+
   return (
     <BackgroundWrapper>
+      { !isMobile && <>
       <div className="parachute left" />
       <div className="parachute top-right" />
       <div className="parachute bottom-right" />
+      </>
+      }
       {children}
     </BackgroundWrapper>
   );
